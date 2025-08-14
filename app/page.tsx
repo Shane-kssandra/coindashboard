@@ -20,7 +20,11 @@ async function fetchCoinData() {
   try {
     const res = await fetch("/api/data");
     const data = await res.json();
-    document.getElementById("coin-count").innerText = data.coins;
+    const coinElement = document.getElementById("coin-count");
+if (coinElement) {
+  coinElement.innerText = data.coins;
+}
+
   } catch (err) {
     console.error("Error fetching coin data:", err);
   }
