@@ -18,7 +18,7 @@ export default function Home() {
 
 async function fetchCoinData() {
   try {
-    const res = await fetch("/api/coins");
+    const res = await fetch("/api/data");
     const data = await res.json();
     document.getElementById("coin-count").innerText = data.coins;
   } catch (err) {
