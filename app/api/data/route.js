@@ -1,4 +1,7 @@
+// app/api/data/route.js
 export async function GET() {
-  // This will be your API response
-  return Response.json({ coins: 0 });
+  return new Response(
+    JSON.stringify({ coins: 42 }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 }
