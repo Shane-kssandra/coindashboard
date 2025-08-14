@@ -16,11 +16,16 @@ export default function Home() {
   );
 }
 
-// Simulated fetch function (replace later with ESP32 API)
-function fetchCoinData() {
-  const newCount = Math.floor(Math.random() * 100); // placeholder random number
-  document.getElementById("coin-count")!.innerText = newCount.toString();
+async function fetchCoinData() {
+  try {
+    const res = await fetch("/api/coins");
+    const data = await res.json();
+    document.getElementById("coin-count").innerText = data.coins;
+  } catch (err) {
+    console.error("Error fetching coin data:", err);
+  }
 }
+
 
 const styles: { [key: string]: React.CSSProperties } = {
   main: {
