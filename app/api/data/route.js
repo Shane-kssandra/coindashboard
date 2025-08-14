@@ -1,4 +1,6 @@
-let latestCoinCount = 0;
+// app/api/data/route.js
+
+let latestCoinCount = 0; // shared between GET and POST
 
 export async function GET() {
   return new Response(
@@ -10,10 +12,13 @@ export async function GET() {
 export async function POST(req) {
   try {
     const body = await req.json();
-    latestCoinCount = body.coins;
-    console.log("Coin count updated to:", latestCoinCount);
-    return new Response("OK", { status: 200 });
+    if (body && typeof body.coins === "number") {
+      latestCoinCount = body.coins; // store value from ESP32
+      return new Response("OK", { status: 200 });
+    } else {
+      return new Response("Invalid data", { status: 400 });
+    }
   } catch (error) {
-    return new Response("Invalid JSON", { status: 400 });
+    return new Response("Bad Request", { status: 400 });
   }
 }
