@@ -1,4 +1,4 @@
-let latestCoinCount = 0; // variable shared between GET & POST
+let latestCoinCount = 0;
 
 export async function GET() {
   return new Response(
@@ -10,7 +10,7 @@ export async function GET() {
 export async function POST(req) {
   try {
     const body = await req.json();
-    latestCoinCount = body.coins; // update from ESP32
+    latestCoinCount = body.coins;
     console.log("Coin count updated to:", latestCoinCount);
     return new Response("OK", { status: 200 });
   } catch (error) {
