@@ -1,43 +1,65 @@
-"use client";
+"use client"
 import { useEffect, useState } from "react";
 
 export default function Home() {
   const [coinCount, setCoinCount] = useState(0);
 
-  // Fetch current count from API
-  async function fetchCount() {
-    const res = await fetch("/api/data");
-    const data = await res.json();
-    setCoinCount(data.count);
-  }
-
-  // Reset counter
-  async function resetCount() {
-    await fetch("/api/data", { method: "DELETE" });
-    fetchCount();
-  }
-
   useEffect(() => {
-    fetchCount();
-    const interval = setInterval(fetchCount, 2000); // refresh every 2s
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/data");
+        const data = await res.json();
+        setCoinCount(data.count);
+      } catch (err) {
+        console.error("Error fetching coin count:", err);
+      }
+    }
+
+    fetchData();
+    const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className="flex items-center justify-center h-screen bg-black text-white">
-      <div className="text-center">
-        <h1 className="text-2xl mb-2">💰 Coin Counter</h1>
-        <p className="text-lg">Coins inserted:</p>
-        <p className="text-5xl font-bold text-blue-500">{coinCount}</p>
+  async function resetCounter() {
+    try {
+      const res = await fetch("/api/data", { method: "DELETE" });
+      const data = await res.json();
+      setCoinCount(data.count); // should reset to 0
+    } catch (err) {
+      console.error("Error resetting counter:", err);
+    }
+  }
 
-        {/* Reset Button */}
-        <button
-          onClick={resetCount}
-          className="mt-6 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Reset
-        </button>
-      </div>
+  return (
+    <div style={{
+      backgroundColor: "black",
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "white"
+    }}>
+      <h1 style={{ fontSize: "2rem" }}>💰 Coin Counter</h1>
+      <p style={{ fontSize: "1.5rem", marginTop: "10px" }}>Coins inserted:</p>
+      <p style={{ fontSize: "3rem", fontWeight: "bold", color: "blue" }}>
+        {coinCount}
+      </p>
+      <button 
+        onClick={resetCounter}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          fontSize: "1rem",
+          borderRadius: "8px",
+          backgroundColor: "red",
+          color: "white",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        🔄 Reset
+      </button>
     </div>
   );
 }

@@ -1,16 +1,23 @@
-let count = 0;
+let coinCount = 0; // stored in memory
 
-export async function GET() {
-  return Response.json({ count });
-}
+export default function handler(req, res) {
+  if (req.method === "POST") {
+    // ESP32 will send { count: X }
+    const { count } = req.body;
+    coinCount = count;
+    return res.status(200).json({ success: true, count: coinCount });
+  }
 
-export async function POST(req) {
-  const body = await req.json();
-  count += body.value || 0;
-  return Response.json({ count });
-}
+  if (req.method === "GET") {
+    // frontend fetches this
+    return res.status(200).json({ count: coinCount });
+  }
 
-export async function DELETE() {
-  count = 0;
-  return Response.json({ count });
+  if (req.method === "DELETE") {
+    // reset endpoint
+    coinCount = 0;
+    return res.status(200).json({ success: true, count: coinCount });
+  }
+
+  res.status(405).json({ error: "Method not allowed" });
 }
