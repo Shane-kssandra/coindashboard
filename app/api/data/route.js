@@ -1,13 +1,27 @@
-let coins = 0; // simple in-memory store
+let coinCount = 0;
 
-export default function handler(req, res) {
-  if (req.method === "GET") {
-    res.status(200).json({ coins });
-  } else if (req.method === "POST") {
-    const { coins: newCoins } = req.body;
-    coins = newCoins; // overwrite value
-    res.status(200).json({ message: "Coin count updated", coins });
-  } else {
-    res.status(405).json({ message: "Method Not Allowed" });
+// Handle GET request → return current count
+export async function GET() {
+  return new Response(JSON.stringify({ coinCount }), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+// Handle POST request → update count
+export async function POST(req) {
+  const body = await req.json();
+  if (typeof body.coinCount === "number") {
+    coinCount = body.coinCount;
   }
+  return new Response(JSON.stringify({ success: true, coinCount }), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+// Handle DELETE request → reset count
+export async function DELETE() {
+  coinCount = 0;
+  return new Response(JSON.stringify({ success: true, coinCount }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
