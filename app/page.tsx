@@ -1,28 +1,31 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/data");
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data = await res.json();
+  const [coins, setCoins] = useState<number>(0);
 
-        const el = document.getElementById("coin-count");
-        if (el) el.innerText = data.coins;
-      } catch (err) {
-        console.error(err);
-      }
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchCoins() {
+      try {
+        const res = await fetch("/api/data", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted) setCoins(data.coins ?? 0);
+      } catch {}
     }
 
-    fetchData();
+    fetchCoins();                    // initial
+    const id = setInterval(fetchCoins, 2000); // poll every 2s
+    return () => { mounted = false; clearInterval(id); };
   }, []);
 
   return (
-    <main>
-      <h1>Coin Counter</h1>
-      <p>Coins: <span id="coin-count">0</span></p>
+    <main style={{ fontFamily: "sans-serif", textAlign: "center", padding: 24 }}>
+      <h1>💰 Coin Counter</h1>
+      <p style={{ fontSize: 18, marginTop: 16 }}>Coins inserted:</p>
+      <div style={{ fontSize: 48, fontWeight: 700, color: "#0070f3" }}>{coins}</div>
     </main>
   );
 }
