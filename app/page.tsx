@@ -2,48 +2,30 @@
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [coinCount, setCoinCount] = useState(0);
+  const [coins, setCoins] = useState<number>(0);
 
-  // Fetch coin count periodically
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/data");
-        const data = await res.json();
-        setCoinCount(data.coinCount);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
-    };
+    let mounted = true;
 
-    fetchData();
-    const interval = setInterval(fetchData, 2000); // refresh every 2s
-    return () => clearInterval(interval);
+    async function fetchCoins() {
+      try {
+        const res = await fetch("/api/data", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted) setCoins(data.coins ?? 0);
+      } catch {}
+    }
+
+    fetchCoins();                    // initial
+    const id = setInterval(fetchCoins, 2000); // poll every 2s
+    return () => { mounted = false; clearInterval(id); };
   }, []);
 
-  // Reset handler
-  const handleReset = async () => {
-    try {
-      const res = await fetch("/api/data", {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      setCoinCount(data.coinCount);
-    } catch (err) {
-      console.error("Error resetting:", err);
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold mb-6">Coin Counter</h1>
-      <p className="text-2xl mb-4">Total Coins: {coinCount}</p>
-      <button
-        onClick={handleReset}
-        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-      >
-        Reset
-      </button>
-    </div>
+    <main style={{ fontFamily: "sans-serif", textAlign: "center", padding: 24 }}>
+      <h1>💰 Coin Counter</h1>
+      <p style={{ fontSize: 18, marginTop: 16 }}>Coins inserted:</p>
+      <div style={{ fontSize: 48, fontWeight: 700, color: "#0070f3" }}>{coins}</div>
+    </main>
   );
 }
