@@ -1,27 +1,17 @@
-let coinCount = 0; // keep value in memory
+// Simple in-memory store
+let coinCount = 0;
 
-// GET - return current coin count
 export async function GET() {
   return Response.json({ coinCount });
 }
 
-// POST - update coin count
 export async function POST(request) {
-  try {
-    const body = await request.json();
-    if (typeof body.coinCount === "number") {
-      coinCount = body.coinCount; // update value
-    }
-    return Response.json({ coinCount });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Invalid request" }), {
-      status: 400,
-    });
-  }
+  const { count } = await request.json();
+  coinCount = count;
+  return Response.json({ message: "Count updated", coinCount });
 }
 
-// DELETE - reset coin count
 export async function DELETE() {
-  coinCount = 0; // reset
-  return Response.json({ coinCount });
+  coinCount = 0;
+  return Response.json({ message: "Count reset", coinCount });
 }

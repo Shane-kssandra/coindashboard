@@ -1,31 +1,57 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [coins, setCoins] = useState<number>(0);
+  const [coinCount, setCoinCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchCoins = async () => {
+    try {
+      const res = await fetch("/api/data", { cache: "no-store" });
+      const data = await res.json();
+      setCoinCount(data.coinCount);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetCoins = async () => {
+    setIsLoading(true);
+    try {
+      await fetch("/api/data", { method: "DELETE" });
+      setCoinCount(0);
+    } catch (err) {
+      console.error("Reset error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let mounted = true;
-
-    async function fetchCoins() {
-      try {
-        const res = await fetch("/api/data", { cache: "no-store" });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (mounted) setCoins(data.coins ?? 0);
-      } catch {}
-    }
-
-    fetchCoins();                    // initial
-    const id = setInterval(fetchCoins, 2000); // poll every 2s
-    return () => { mounted = false; clearInterval(id); };
+    fetchCoins();
+    const interval = setInterval(fetchCoins, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <main style={{ fontFamily: "sans-serif", textAlign: "center", padding: 24 }}>
-      <h1>💰 Coin Counter</h1>
-      <p style={{ fontSize: 18, marginTop: 16 }}>Coins inserted:</p>
-      <div style={{ fontSize: 48, fontWeight: 700, color: "#0070f3" }}>{coins}</div>
-    </main>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <h1 className="text-2xl mb-4">💰 Coin Counter</h1>
+      
+      {isLoading ? (
+        <div className="text-6xl font-bold text-blue-500 animate-pulse">...</div>
+      ) : (
+        <h2 className="text-6xl font-bold text-blue-500">{coinCount}</h2>
+      )}
+      
+      <button
+        onClick={resetCoins}
+        disabled={isLoading}
+        className={`mt-6 px-6 py-2 rounded-xl ${isLoading ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700'}`}
+      >
+        {isLoading ? "Processing..." : "Reset"}
+      </button>
+    </div>
   );
 }
