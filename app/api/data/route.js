@@ -1,20 +1,27 @@
-import { kv } from "@vercel/kv";
+let coinCount = 0; // keep value in memory
 
+// GET - return current coin count
 export async function GET() {
-  const coinCount = (await kv.get("coinCount")) || 0;
   return Response.json({ coinCount });
 }
 
+// POST - update coin count
 export async function POST(request) {
-  const body = await request.json();
-  if (typeof body.coinCount === "number") {
-    await kv.set("coinCount", body.coinCount);
+  try {
+    const body = await request.json();
+    if (typeof body.coinCount === "number") {
+      coinCount = body.coinCount; // update value
+    }
+    return Response.json({ coinCount });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
+      status: 400,
+    });
   }
-  const coinCount = await kv.get("coinCount");
-  return Response.json({ coinCount });
 }
 
+// DELETE - reset coin count
 export async function DELETE() {
-  await kv.set("coinCount", 0);
-  return Response.json({ coinCount: 0 });
+  coinCount = 0; // reset
+  return Response.json({ coinCount });
 }
