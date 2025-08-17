@@ -1,31 +1,44 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [coins, setCoins] = useState<number>(0);
+  const [coins, setCoins] = useState(0);
 
   useEffect(() => {
-    let mounted = true;
+    const fetchData = async () => {
+      const res = await fetch("/api/data");
+      const data = await res.json();
+      setCoins(data.coins);
+    };
 
-    async function fetchCoins() {
-      try {
-        const res = await fetch("/api/data", { cache: "no-store" });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (mounted) setCoins(data.coins ?? 0);
-      } catch {}
-    }
-
-    fetchCoins();                    // initial
-    const id = setInterval(fetchCoins, 2000); // poll every 2s
-    return () => { mounted = false; clearInterval(id); };
+    fetchData();
+    const interval = setInterval(fetchData, 2000); // auto-refresh
+    return () => clearInterval(interval);
   }, []);
 
+  // ✅ Reset handler
+  const resetCoins = async () => {
+    await fetch("/api/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ coins: 0 }),
+    });
+    setCoins(0); // update UI immediately
+  };
+
   return (
-    <main style={{ fontFamily: "sans-serif", textAlign: "center", padding: 24 }}>
-      <h1>💰 Coin Counter</h1>
-      <p style={{ fontSize: 18, marginTop: 16 }}>Coins inserted:</p>
-      <div style={{ fontSize: 48, fontWeight: 700, color: "#0070f3" }}>{coins}</div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-10">
+      <h1 className="text-4xl font-bold mb-6">💰 Coin Dashboard</h1>
+      <div className="text-2xl mb-4">Total Coins: {coins}</div>
+
+      {/* ✅ Reset Button */}
+      <button
+        onClick={resetCoins}
+        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+      >
+        Reset Coins
+      </button>
     </main>
   );
 }
